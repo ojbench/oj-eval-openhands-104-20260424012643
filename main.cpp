@@ -8,7 +8,8 @@ using namespace std;
 
 const int MAXN = 1005;
 int grid[MAXN][MAXN];
-int dist[MAXN][MAXN];
+int distFromStart[MAXN][MAXN];
+int distFromHome[MAXN][MAXN];
 int n, m;
 
 // Directions: up, down, left, right
@@ -20,8 +21,8 @@ struct Point {
 };
 
 // BFS to find shortest distance from start to all reachable positions
-void bfs(int startX, int startY) {
-    memset(dist, -1, sizeof(dist));
+void bfs(int startX, int startY, int dist[][MAXN]) {
+    memset(dist, -1, sizeof(int) * MAXN * MAXN);
     queue<Point> q;
     q.push({startX, startY});
     dist[startX][startY] = 0;
@@ -72,24 +73,21 @@ int main() {
         }
     }
     
-    // BFS from start position to find distances to all umbrella shops
-    bfs(startX, startY);
+    // BFS from start position
+    bfs(startX, startY, distFromStart);
+    
+    // BFS from home position
+    bfs(homeX, homeY, distFromHome);
     
     int minDistance = INT_MAX;
     
     // For each umbrella shop, calculate total distance
     for (const Point& shop : shops) {
-        int distToShop = dist[shop.x][shop.y];
+        int distToShop = distFromStart[shop.x][shop.y];
+        int distToHome = distFromHome[shop.x][shop.y];
         
-        // If shop is not reachable from start, skip it
-        if (distToShop == -1) continue;
-        
-        // BFS from shop to find distance to home
-        bfs(shop.x, shop.y);
-        int distToHome = dist[homeX][homeY];
-        
-        // If home is not reachable from shop, skip this shop
-        if (distToHome == -1) continue;
+        // If shop is not reachable from start or home, skip it
+        if (distToShop == -1 || distToHome == -1) continue;
         
         // Update minimum distance
         int totalDist = distToShop + distToHome;
